@@ -5,24 +5,7 @@ A super simple FastAPI application that allows students to view and sign up
 for extracurricular activities at Mergington High School.
 """
 
-from fastapi import APIRouter
-
-router = APIRouter()
-
-@router.delete("/activities/{activity_name}/participants/{email}")
-async def unregister_participant(activity_name: str, email: str):
-    if activity_name in activities:
-        if email in activities[activity_name]["participants"]:
-            activities[activity_name]["participants"].remove(email)
-            return {"message": f"{email} has been unregistered from {activity_name}."}
-        else:
-            raise HTTPException(status_code=404, detail="Participant not found.")
-    else:
-        raise HTTPException(status_code=404, detail="Activity not found.")
-
-app.include_router(router)
-
-...existing code...
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import os
@@ -38,42 +21,7 @@ app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
 
 # In-memory activity database
 activities = {
-    "Basketball Team": {
-        "description": "Join our competitive basketball team and participate in inter-school tournaments",
-        "schedule": "Mondays and Wednesdays, 4:00 PM - 5:30 PM",
-        "max_participants": 15,
-        "participants": ["alex@mergington.edu"]
-        },
-        "Tennis Club": {
-        "description": "Learn tennis skills and play friendly matches",
-        "schedule": "Tuesdays and Thursdays, 3:30 PM - 5:00 PM",
-        "max_participants": 10,
-        "participants": ["sarah@mergington.edu"]
-        },
-        "Art Studio": {
-        "description": "Explore painting, drawing, and mixed media techniques",
-        "schedule": "Wednesdays, 3:30 PM - 5:00 PM",
-        "max_participants": 18,
-        "participants": ["maya@mergington.edu"]
-        },
-        "Drama Club": {
-        "description": "Perform in school plays and develop acting skills",
-        "schedule": "Thursdays, 3:30 PM - 5:00 PM",
-        "max_participants": 25,
-        "participants": ["james@mergington.edu", "isabella@mergington.edu"]
-        },
-        "Debate Team": {
-        "description": "Develop public speaking and argumentation skills through competitive debates",
-        "schedule": "Mondays, 3:30 PM - 5:00 PM",
-        "max_participants": 12,
-        "participants": ["lucas@mergington.edu"]
-        },
-        "Science Club": {
-        "description": "Conduct experiments and explore scientific discoveries",
-        "schedule": "Fridays, 3:30 PM - 5:00 PM",
-        "max_participants": 16,
-        "participants": ["noah@mergington.edu", "ava@mergington.edu"]
-        },
+    
     "Chess Club": {
         "description": "Learn strategies and compete in chess tournaments",
         "schedule": "Fridays, 3:30 PM - 5:00 PM",
@@ -121,3 +69,17 @@ def signup_for_activity(activity_name: str, email: str):
         raise HTTPException(status_code=400, detail="Student already signed up for this activity")  
     activity["participants"].append(email)
     return {"message": f"Signed up {email} for {activity_name}"}
+
+@app.delete("/activities/{activity_name}/participants/{email}")
+def unregister_participant(activity_name: str, email: str):
+    """Unregister a student from an activity"""
+    if activity_name not in activities:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    
+    activity = activities[activity_name]
+    
+    if email not in activity["participants"]:
+        raise HTTPException(status_code=404, detail="Participant not found")
+    
+    activity["participants"].remove(email)
+    return {"message": f"{email} has been unregistered from {activity_name}"}
