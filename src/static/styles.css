@@ -87,10 +87,20 @@ section h3 {
   font-weight: 600;
 }
 
+/* Hide bullet points for participants list */
 .participants-list {
-  margin-left: 20px;
+  list-style-type: none; /* Hides bullet points */
   padding: 0;
 }
+
+/* Style for delete icon */
+.delete-icon {
+  cursor: pointer;
+  margin-left: 10px;
+  color: red;
+}
+
+...existing code...
 
 .participants-list li {
   margin-bottom: 5px;
